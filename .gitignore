@@ -12,6 +12,9 @@ public/ffmpeg
 public/tmp-test
 
 # Local env / editor noise
+.env
+.env.*
+!.env.example
 *.local
 .DS_Store
 npm-debug.log*
