@@ -140,10 +140,25 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
-        // runtime WASM (onnxruntime, MediaPipe) loads lazily on demand; don't
-        // precache it (keeps the SW small — it's served from the same origin).
+        // App shell + fonts precached at install (~3.5 MB). The 100 MB of
+        // runtime WASM is NOT precached (it would delay `install` massively);
+        // it's runtime-cached CacheFirst below, so the first online visit
+        // populates the cache and every later visit — including offline —
+        // loads from disk instantly.
+        globPatterns: ['**/*.{js,css,html,svg,png,ttf,woff2,webmanifest}'],
         globIgnores: ['**/ort/**', '**/mediapipe/**', '**/ffmpeg/**'],
+        runtimeCaching: [
+          {
+            urlPattern: /\/ort\/|\/mediapipe\/|\/ffmpeg\//,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'xenoclipper-wasm-v1',
+              rangeRequests: true,
+              cacheableResponse: { statuses: [0, 200] },
+              expiration: { maxEntries: 32, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
+        ],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
       },
